@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "fleet-execution" {
   statement {
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
-    resources = [var.fleet_config.database.password_secret_arn]
+    resources = [var.fleet_config.database.password_secret_arn, var.fleet_config.docker_token_arn]
   }
 }
 
