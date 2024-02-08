@@ -263,6 +263,7 @@ variable "fleet_config" {
     mem                          = 512
     cpu                          = 256
     image                        = "fleetdm/fleet:v4.31.1"
+    docker_token_arn             = null
     family                       = "fleet"
     sidecars                     = []
     depends_on                   = []
