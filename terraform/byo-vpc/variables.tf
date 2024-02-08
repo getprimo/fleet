@@ -166,6 +166,7 @@ variable "fleet_config" {
     mem                          = optional(number, 4096)
     cpu                          = optional(number, 512)
     image                        = optional(string, "fleetdm/fleet:v4.44.0")
+    docker_token_arn             = string
     family                       = optional(string, "fleet")
     sidecars                     = optional(list(any), [])
     depends_on                   = optional(list(any), [])

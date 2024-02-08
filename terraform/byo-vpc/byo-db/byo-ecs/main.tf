@@ -58,8 +58,11 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode(
     concat([
       {
-        name        = "fleet"
-        image       = var.fleet_config.image
+        name  = "fleet"
+        image = var.fleet_config.image
+        repositoryCredentials = {
+          credentialsParameter = var.fleet_config.docker_token_arn
+        }
         cpu         = var.fleet_config.cpu
         memory      = var.fleet_config.mem
         mountPoints = var.fleet_config.mount_points
