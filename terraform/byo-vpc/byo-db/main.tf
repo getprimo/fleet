@@ -5,6 +5,9 @@ module "ecs" {
     loadbalancer = {
       arn = module.alb.target_group_arns[0]
     }
+    extra_load_balancers = [
+      { arn = aws_lb_target_group.fleet.arn }
+    ]
   })
   migration_config = var.migration_config
   vpc_id           = var.vpc_id
