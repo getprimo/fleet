@@ -403,3 +403,13 @@ variable "alb_config" {
   })
   default = {}
 }
+
+variable "alb_name" {
+  type        = string
+  description = "ALB name associated with the ECS cluster"
+}
+
+variable "domain_name" {
+  type        = string
+  description = "Fleet Domain name"
+}

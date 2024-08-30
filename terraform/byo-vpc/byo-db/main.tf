@@ -24,6 +24,48 @@ module "cluster" {
   tags                                  = var.ecs_cluster.tags
 }
 
+data "aws_lb" "alb" {
+  name = var.alb_name
+}
+
+data "aws_lb_listener" "https" {
+  load_balancer_arn = data.aws_lb.selected.arn
+  port              = 443
+}
+
+resource "aws_lb_target_group" "fleet" {
+  name     = "tg-${var.ecs_cluster.cluster_name}"
+  port     = 80
+  protocol = "HTTP"
+  # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/alb.html
+  target_type = "ip"
+  vpc_id      = var.vpc_id
+  health_check = {
+    path                = "/healthz"
+    matcher             = "200"
+    timeout             = 10
+    interval            = 15
+    healthy_threshold   = 5
+    unhealthy_threshold = 5
+  }
+}
+
+resource "aws_lb_listener_rule" "fleet" {
+  listener_arn = data.aws_lb_listener.https.arn
+  priority     = 100
+
+  condition {
+    host_header {
+      values = [var.domain_name]
+    }
+  }
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.fleet.arn
+  }
+}
+
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = "8.2.1"

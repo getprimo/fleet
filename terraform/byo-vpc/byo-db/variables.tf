@@ -265,3 +265,13 @@ variable "alb_config" {
     idle_timeout         = optional(number, 60)
   })
 }
+
+variable "alb_name" {
+  type        = string
+  description = "ALB name associated with the ECS cluster"
+}
+
+variable "domain_name" {
+  type        = string
+  description = "Fleet Domain name"
+}

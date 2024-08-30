@@ -19,6 +19,8 @@ module "byo-db" {
   ecs_cluster      = var.ecs_cluster
   migration_config = var.migration_config
   alb_config       = var.alb_config
+  alb_name         = var.alb_name
+  domain_name      = var.domain_name
 }
 
 resource "random_password" "rds" {
