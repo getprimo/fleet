@@ -34,7 +34,7 @@ data "aws_lb_listener" "https" {
 }
 
 resource "aws_lb_target_group" "fleet" {
-  name     = "tg-${var.ecs_cluster.cluster_name}"
+  name     = substr("tg-${var.ecs_cluster.cluster_name}", 0, 32)
   port     = 80
   protocol = "HTTP"
   # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/alb.html
