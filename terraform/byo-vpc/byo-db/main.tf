@@ -24,12 +24,12 @@ module "cluster" {
   tags                                  = var.ecs_cluster.tags
 }
 
-data "aws_lb" "alb" {
+data "aws_lb" "fleet" {
   name = var.alb_name
 }
 
 data "aws_lb_listener" "https" {
-  load_balancer_arn = data.aws_lb.selected.arn
+  load_balancer_arn = data.aws_lb.fleet.arn
   port              = 443
 }
 
@@ -40,7 +40,7 @@ resource "aws_lb_target_group" "fleet" {
   # https://docs.aws.amazon.com/AmazonECS/latest/developerguide/alb.html
   target_type = "ip"
   vpc_id      = var.vpc_id
-  health_check = {
+  health_check {
     path                = "/healthz"
     matcher             = "200"
     timeout             = 10
