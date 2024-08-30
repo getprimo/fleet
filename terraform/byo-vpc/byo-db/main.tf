@@ -6,7 +6,11 @@ module "ecs" {
       arn = module.alb.target_group_arns[0]
     }
     extra_load_balancers = [
-      { arn = aws_lb_target_group.fleet.arn }
+      {
+        target_group_arn = aws_lb_target_group.fleet.arn
+        container_name   = "fleet"
+        container_port   = 8080
+      }
     ]
   })
   migration_config = var.migration_config
