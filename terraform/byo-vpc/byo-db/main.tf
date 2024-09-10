@@ -5,9 +5,9 @@ module "ecs" {
     loadbalancer = {
       arn = module.alb.target_group_arns[0]
     }
-    extra_load_balancers = [
+    extra_load_balancers = var.alb_config == null ? [] : [
       {
-        target_group_arn = aws_lb_target_group.fleet.arn
+        target_group_arn = aws_lb_target_group.fleet[0].arn
         container_name   = "fleet"
         container_port   = 8080
       }
@@ -32,15 +32,18 @@ module "cluster" {
 }
 
 data "aws_lb" "fleet" {
-  name = var.alb_name
+  count = var.alb_config == null ? 0 : 1
+  name  = var.alb_name
 }
 
 data "aws_lb_listener" "https" {
-  load_balancer_arn = data.aws_lb.fleet.arn
+  count             = var.alb_config == null ? 0 : 1
+  load_balancer_arn = data.aws_lb.fleet[0].arn
   port              = 443
 }
 
 resource "aws_lb_target_group" "fleet" {
+  count    = var.alb_config == null ? 0 : 1
   name     = substr("tg-${var.ecs_cluster.cluster_name}", 0, 32)
   port     = 80
   protocol = "HTTP"
@@ -58,7 +61,8 @@ resource "aws_lb_target_group" "fleet" {
 }
 
 resource "aws_lb_listener_rule" "fleet" {
-  listener_arn = data.aws_lb_listener.https.arn
+  count        = var.alb_config == null ? 0 : 1
+  listener_arn = data.aws_lb_listener.https[0].arn
   priority     = 100
 
   condition {
@@ -69,7 +73,7 @@ resource "aws_lb_listener_rule" "fleet" {
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.fleet.arn
+    target_group_arn = aws_lb_target_group.fleet[0].arn
   }
 }
 
