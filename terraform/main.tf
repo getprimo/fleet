@@ -54,6 +54,8 @@ module "byo-vpc" {
     subnets         = module.vpc.public_subnets
     certificate_arn = var.certificate_arn
   })
+  alb_name     = var.alb_name
+  domain_name  = var.domain_name
   ecs_cluster  = var.ecs_cluster
   fleet_config = var.fleet_config
 }
