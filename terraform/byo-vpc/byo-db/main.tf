@@ -63,7 +63,6 @@ resource "aws_lb_target_group" "fleet" {
 resource "aws_lb_listener_rule" "fleet" {
   count        = var.alb_name == null ? 0 : 1
   listener_arn = data.aws_lb_listener.https[0].arn
-  priority     = 100
 
   condition {
     host_header {
