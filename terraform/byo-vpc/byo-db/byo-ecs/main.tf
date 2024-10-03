@@ -97,10 +97,12 @@ resource "aws_ecs_task_definition" "backend" {
             name      = "FLEET_MYSQL_PASSWORD"
             valueFrom = var.fleet_config.database.password_secret_arn
           },
-          {
-            name      = "FLEET_MYSQL_READ_REPLICA_PASSWORD"
-            valueFrom = var.fleet_config.database.password_secret_arn
-          }
+
+          # Enable it only if a Read Replica is used
+          # {
+          #   name      = "FLEET_MYSQL_READ_REPLICA_PASSWORD"
+          #   valueFrom = var.fleet_config.database.password_secret_arn
+          # }
         ], local.secrets)
         environment = concat([
           {
