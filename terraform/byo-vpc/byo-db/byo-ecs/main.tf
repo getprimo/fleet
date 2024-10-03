@@ -115,18 +115,20 @@ resource "aws_ecs_task_definition" "backend" {
             name  = "FLEET_MYSQL_ADDRESS"
             value = var.fleet_config.database.address
           },
-          {
-            name  = "FLEET_MYSQL_READ_REPLICA_USERNAME"
-            value = var.fleet_config.database.user
-          },
-          {
-            name  = "FLEET_MYSQL_READ_REPLICA_DATABASE"
-            value = var.fleet_config.database.database
-          },
-          {
-            name  = "FLEET_MYSQL_READ_REPLICA_ADDRESS"
-            value = var.fleet_config.database.rr_address == null ? var.fleet_config.database.address : var.fleet_config.database.rr_address
-          },
+
+          # Enable it only if a Read Replica is used
+          # {
+          #   name  = "FLEET_MYSQL_READ_REPLICA_USERNAME"
+          #   value = var.fleet_config.database.user
+          # },
+          # {
+          #   name  = "FLEET_MYSQL_READ_REPLICA_DATABASE"
+          #   value = var.fleet_config.database.database
+          # },
+          # {
+          #   name  = "FLEET_MYSQL_READ_REPLICA_ADDRESS"
+          #   value = var.fleet_config.database.rr_address == null ? var.fleet_config.database.address : var.fleet_config.database.rr_address
+          # },
           {
             name  = "FLEET_REDIS_ADDRESS"
             value = var.fleet_config.redis.address
