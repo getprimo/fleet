@@ -3,9 +3,7 @@ module "ecs" {
   ecs_cluster = module.cluster.cluster_name
   fleet_config = merge(var.fleet_config, {
     loadbalancer = {
-      target_group_arn = aws_lb_target_group.fleet[0].arn
-      container_name   = "fleet"
-      container_port   = 8080
+      arn = aws_lb_target_group.fleet[0].arn
     }
     extra_load_balancers = []
 
