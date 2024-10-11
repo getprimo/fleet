@@ -5,7 +5,3 @@ output "byo-ecs" {
 output "cluster" {
   value = module.cluster
 }
-
-output "alb" {
-  value = module.alb
-}
