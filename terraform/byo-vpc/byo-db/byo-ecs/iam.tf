@@ -16,7 +16,7 @@ data "aws_iam_policy_document" "fleet" {
     ]
 
     resources = [
-      "arn:aws:s3:::${var.s3_bucket_configuration.name}/${var.s3_bucket_configuration.software_path}/*"
+      "arn:aws:s3:::${var.s3_bucket_config.name}/${var.s3_bucket_config.software_path}/*"
     ]
   }
 

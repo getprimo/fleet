@@ -145,11 +145,11 @@ resource "aws_ecs_task_definition" "backend" {
           },
           {
             name  = "FLEET_S3_SOFTWARE_INSTALLERS_BUCKET"
-            value = var.s3_bucket_configuration.name
+            value = var.s3_bucket_config.name
           },
           {
             name  = "FLEET_S3_SOFTWARE_INSTALLERS_PREFIX"
-            value = var.s3_bucket_configuration.software_path
+            value = var.s3_bucket_config.software_path
           },
           {
             name  = "FLEET_S3_SOFTWARE_INSTALLERS_STS_ASSUME_ROLE_ARN"

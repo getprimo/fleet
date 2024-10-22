@@ -173,7 +173,7 @@ variable "migration_config" {
   nullable    = false
 }
 
-variable "s3_bucket_configuration" {
+variable "s3_bucket_config" {
   type = object({
     name          = string
     software_path = string
