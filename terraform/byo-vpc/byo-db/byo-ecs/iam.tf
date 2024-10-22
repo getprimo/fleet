@@ -5,6 +5,21 @@ data "aws_iam_policy_document" "fleet" {
     resources = ["*"]
   }
 
+  # Allow to access S3 subdirectoy for fleet software packages management
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject"
+    ]
+
+    resources = [
+      "arn:aws:s3:::${var.s3_bucket_configuration.name}/${var.s3_bucket_configuration.software_path}/*"
+    ]
+  }
+
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -19,7 +34,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 data "aws_iam_policy_document" "fleet-execution" {
-  // allow fleet application to obtain the database password from secrets manager
+  # Allow fleet application to obtain the database password from secrets manager
   statement {
     effect    = "Allow"
     actions   = ["secretsmanager:GetSecretValue"]
