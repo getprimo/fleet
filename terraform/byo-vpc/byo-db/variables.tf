@@ -276,3 +276,11 @@ variable "domain_name" {
   description = "Fleet Domain name"
   default     = null
 }
+
+variable "s3_bucket_config" {
+  type = object({
+    name          = string
+    software_path = string
+  })
+  description = "S3 bucket configuration to manage fleet software packages"
+}

@@ -10,6 +10,7 @@ module "ecs" {
   })
   migration_config = var.migration_config
   vpc_id           = var.vpc_id
+  s3_bucket_config = var.s3_bucket_config
 }
 
 module "cluster" {

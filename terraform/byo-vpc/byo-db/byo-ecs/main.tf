@@ -143,6 +143,14 @@ resource "aws_ecs_task_definition" "backend" {
             name  = "FLEET_SERVER_TLS"
             value = "false"
           },
+          {
+            name  = "FLEET_S3_SOFTWARE_INSTALLERS_BUCKET"
+            value = var.s3_bucket_config.name
+          },
+          {
+            name  = "FLEET_S3_SOFTWARE_INSTALLERS_PREFIX"
+            value = var.s3_bucket_config.software_path
+          },
         ], local.environment)
       }
   ], var.fleet_config.sidecars))
