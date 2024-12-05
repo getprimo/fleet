@@ -272,7 +272,7 @@ resource "aws_security_group" "main" {
       from_port       = 6379
       to_port         = 6379
       protocol        = "TCP"
-      security_groups = [data.aws_security_group.twingate_connector[0]]
+      security_groups = [data.aws_security_group.twingate_connector[0].id]
     }
   }
 }
