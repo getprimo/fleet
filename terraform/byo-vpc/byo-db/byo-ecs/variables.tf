@@ -202,3 +202,9 @@ variable "enable_redis_sidecar" {
   default     = false
   description = "Use a Redis sidecar container within the fleet RDS task. This is done to lower cost of multiple ElastiCache instances."
 }
+
+variable "twingate_security_group" {
+  type        = string
+  default     = "tg-fleet-just-ara"
+  description = "Twinwgate connector security group allowed to connect to Redis in the ECS task"
+}

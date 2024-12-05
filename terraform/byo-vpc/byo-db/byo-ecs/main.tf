@@ -264,4 +264,15 @@ resource "aws_security_group" "main" {
     protocol    = "TCP"
     cidr_blocks = ["10.0.0.0/8"]
   }
+
+  dynamic "egress" {
+    for_each = var.enable_redis_sidecar ? [1] : []
+    content {
+      description     = "Allow Twingate connector to connect to redis"
+      from_port       = 6379
+      to_port         = 6379
+      protocol        = "TCP"
+      security_groups = [var.twingate_security_group]
+    }
+  }
 }
