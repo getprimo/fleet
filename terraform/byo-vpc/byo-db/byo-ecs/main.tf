@@ -265,7 +265,7 @@ resource "aws_security_group" "main" {
     cidr_blocks = ["10.0.0.0/8"]
   }
 
-  dynamic "egress" {
+  dynamic "ingress" {
     for_each = var.enable_redis_sidecar ? [1] : []
     content {
       description     = "Allow Twingate connector to connect to redis"
