@@ -155,7 +155,20 @@ resource "aws_ecs_task_definition" "backend" {
       }
       ],
       var.fleet_config.sidecars,
-      var.enable_redis_sidecar ? [var.redis_sidecar_config] : [],
+      var.enable_redis_sidecar ?
+      [
+        merge(var.redis_sidecar_config, {
+          logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+              awslogs-group         = var.fleet_config.awslogs.create ? aws_cloudwatch_log_group.main[0].name : var.fleet_config.awslogs.name
+              awslogs-region        = var.fleet_config.awslogs.create ? data.aws_region.current.name : var.fleet_config.awslogs.region
+              awslogs-stream-prefix = "${var.fleet_config.awslogs.prefix}-redis"
+            }
+          }
+        })
+      ]
+      : [],
     )
   )
   dynamic "volume" {
