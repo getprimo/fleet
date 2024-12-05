@@ -155,7 +155,7 @@ resource "aws_ecs_task_definition" "backend" {
       }
       ],
       var.fleet_config.sidecars,
-      var.enable_redis_sidecar ? var.redis_sidecar_config : [],
+      var.enable_redis_sidecar ? [var.redis_sidecar_config] : [],
     )
   )
   dynamic "volume" {
