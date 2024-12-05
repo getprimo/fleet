@@ -133,11 +133,11 @@ resource "aws_ecs_task_definition" "backend" {
           # },
           {
             name  = "FLEET_REDIS_ADDRESS"
-            value = var.fleet_config.redis.address
+            value = var.enable_redis_sidecar ? "localhost:6379" : var.fleet_config.redis.address
           },
           {
             name  = "FLEET_REDIS_USE_TLS"
-            value = tostring(var.fleet_config.redis.use_tls)
+            value = var.enable_redis_sidecar ? "false" : tostring(var.fleet_config.redis.use_tls)
           },
           {
             name  = "FLEET_SERVER_TLS"
@@ -153,7 +153,11 @@ resource "aws_ecs_task_definition" "backend" {
           },
         ], local.environment)
       }
-  ], var.fleet_config.sidecars))
+      ],
+      var.fleet_config.sidecars,
+      var.enable_redis_sidecar ? var.redis_sidecar_config : [],
+    )
+  )
   dynamic "volume" {
     for_each = var.fleet_config.volumes
     content {

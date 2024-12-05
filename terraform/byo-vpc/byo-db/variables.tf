@@ -284,3 +284,26 @@ variable "s3_bucket_config" {
   })
   description = "S3 bucket configuration to manage fleet software packages"
 }
+
+variable "redis_sidecar_config" {
+  type = object({
+    name              = optional(string, "redis")
+    image             = optional(string, "redis:latest")
+    essential         = optional(bool, true)
+    cpu               = optional(number)
+    memory            = optional(number)
+    memoryReservation = optional(number, 100)
+    portMappings = optional(list(any), [{
+      containerPort = 6379
+      protocol      = "tcp"
+    }])
+  })
+  default     = {}
+  description = "Redis ECS task container configuration. It is used as a sidecar container in the fleet ECS task"
+}
+
+variable "enable_redis_sidecar" {
+  type        = bool
+  default     = false
+  description = "Use a Redis sidecar container within the fleet RDS task. This is done to lower cost of multiple ElastiCache instances."
+}

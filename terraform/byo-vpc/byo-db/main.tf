@@ -8,9 +8,11 @@ module "ecs" {
     extra_load_balancers = []
 
   })
-  migration_config = var.migration_config
-  vpc_id           = var.vpc_id
-  s3_bucket_config = var.s3_bucket_config
+  migration_config     = var.migration_config
+  vpc_id               = var.vpc_id
+  s3_bucket_config     = var.s3_bucket_config
+  redis_sidecar_config = var.redis_sidecar_config
+  enable_redis_sidecar = var.enable_redis_sidecar
 }
 
 module "cluster" {
