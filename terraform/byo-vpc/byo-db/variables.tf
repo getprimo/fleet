@@ -290,9 +290,9 @@ variable "redis_sidecar_config" {
     name              = optional(string, "redis")
     image             = optional(string, "redis:latest")
     essential         = optional(bool, true)
-    cpu               = optional(number)
-    memory            = optional(number)
-    memoryReservation = optional(number, 100)
+    cpu               = optional(number, 128)
+    memory            = optional(number, 256)
+    memoryReservation = optional(number, 128)
     portMappings = optional(list(any), [{
       containerPort = 6379
       protocol      = "tcp"

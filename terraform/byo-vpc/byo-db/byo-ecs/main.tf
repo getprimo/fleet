@@ -63,7 +63,7 @@ resource "aws_ecs_task_definition" "backend" {
         repositoryCredentials = {
           credentialsParameter = var.fleet_config.docker_token_arn
         }
-        cpu         = var.fleet_config.cpu
+        cpu         = var.enable_redis_sidecar ? var.fleet_config.cpu - var.redis_sidecar_config.cpu : var.fleet_config.cpu
         memory      = var.fleet_config.mem
         mountPoints = var.fleet_config.mount_points
         dependsOn   = var.fleet_config.depends_on
