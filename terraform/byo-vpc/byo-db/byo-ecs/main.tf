@@ -16,10 +16,10 @@ locals {
   ], var.fleet_config.extra_load_balancers)
 
   default_docker_labels = {
-    env     = var.environment
-    service = "fleet",
-    tenant  = var.company_domain
-    version = split(":", var.fleet_config.image)[1]
+    "com.getprimo.tenant.env"     = var.environment
+    "com.getprimo.tenant.service" = "fleet",
+    "com.getprimo.tenant.tenant"  = var.company_domain
+    "com.getprimo.tenant.version" = split(":", var.fleet_config.image)[1]
   }
 
   default_datadog_environment = {
@@ -27,7 +27,7 @@ locals {
     DD_SITE                        = "datadoghq.eu",
     DD_TAGS                        = "company.id:${var.company_id},company.name:${var.company_domain}"
     DD_ECS_TASK_COLLECTION_ENABLED = "true"
-    DD_CONTAINER_LABELS_AS_TAGS    = "\"com.getprimo.env\":\"env\"},{\"com.getprimo.service\":\"service\",\"com.getprimo.component\":\"component\"},\"com.getprimo.tenant\":\"tenant\"},\"com.getprimo.version\":\"version\"}"
+    DD_CONTAINER_LABELS_AS_TAGS    = "{\"com.getprimo.env\":\"env\",\"com.getprimo.service\":\"service\",\"com.getprimo.component\":\"component\",\"com.getprimo.tenant\":\"tenant\",\"com.getprimo.version\":\"version\"}"
   }
 
   default_datadog_secrets = {
@@ -46,7 +46,7 @@ locals {
 data "aws_region" "current" {}
 
 resource "aws_ecs_service" "fleet" {
-  name                               = var.fleet_config.service.name
+  name                               = "${var.fleet_config.service.name}-${var.company_domain}"
   launch_type                        = "FARGATE"
   cluster                            = var.ecs_cluster
   task_definition                    = aws_ecs_task_definition.backend.arn
@@ -73,7 +73,7 @@ resource "aws_ecs_service" "fleet" {
     security_groups = var.fleet_config.networking.security_groups == null ? aws_security_group.main.*.id : var.fleet_config.networking.security_groups
   }
   tags = {
-    component = "app"
+    component = "web-app"
   }
 }
 
@@ -93,7 +93,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode(
     concat([
       {
-        name  = "fleet-${var.company_domain}",
+        name  = "fleet",
         image = var.fleet_config.image
         repositoryCredentials = {
           credentialsParameter = var.fleet_config.docker_token_arn
@@ -188,7 +188,7 @@ resource "aws_ecs_task_definition" "backend" {
           },
         ], local.environment)
         dockerLabels = merge(local.default_docker_labels, {
-          component = "web-app"
+          "com.getprimo.component" = "web-app"
         })
       }
       ],
@@ -206,7 +206,7 @@ resource "aws_ecs_task_definition" "backend" {
             }
           }
           dockerLabels = merge(local.default_docker_labels, {
-            component = "redis"
+            "com.getprimo.component" = "redis"
           })
         })
       ]
