@@ -188,6 +188,7 @@ variable "redis_sidecar_config" {
     cpu               = optional(number, 128)
     memory            = optional(number, 256)
     memoryReservation = optional(number, 128)
+    environment       = optional(list(any), [{}])
     portMappings = optional(list(any), [{
       containerPort = 6379
       protocol      = "tcp"
@@ -199,7 +200,7 @@ variable "redis_sidecar_config" {
 
 variable "enable_redis_sidecar" {
   type        = bool
-  default     = false
+  default     = true
   description = "Use a Redis sidecar container within the fleet RDS task. This is done to lower cost of multiple ElastiCache instances."
 }
 
@@ -207,4 +208,36 @@ variable "twingate_security_group" {
   type        = string
   default     = "tg-fleet-just-ara"
   description = "Twinwgate connector security group allowed to connect to Redis in the ECS task"
+}
+
+variable "enable_datadog_agent" {
+  type        = bool
+  default     = true
+  description = "Enable datadog agent as container sidecar to collect fleet observability data"
+}
+
+variable "datadog_agent_sidecar_config" {
+  type = object({
+    name              = optional(string, "datadog-agent")
+    image             = optional(string, "public.ecr.aws/datadog/agent:latest")
+    essential         = optional(bool, true)
+    cpu               = optional(number, 128)
+    memory            = optional(number, 256)
+    memoryReservation = optional(number, 128)
+    environment = optional(list(any), [
+      { name = "ECS_FARGATE", value = "true" }
+    ])
+    portMappings = optional(list(any), [{
+      containerPort = 6379
+      protocol      = "tcp"
+    }])
+  })
+  default     = {}
+  description = "Datadog agent ECS task container configuration. It is used as a sidecar container in the fleet ECS task to collect observability data"
+}
+
+variable "datadog_api_aws_secret_manager_key" {
+  type        = string
+  default     = "INFRASTRUCTURE_DATADOG_API_KEY"
+  description = "AWS Secret Manager key to locate the Datadog API key"
 }

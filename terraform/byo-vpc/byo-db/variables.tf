@@ -307,3 +307,21 @@ variable "enable_redis_sidecar" {
   default     = false
   description = "Use a Redis sidecar container within the fleet RDS task. This is done to lower cost of multiple ElastiCache instances."
 }
+
+variable "enable_datadog_agent" {
+  type        = bool
+  default     = true
+  description = "Enable datadog agent as container sidecar to collect fleet observability data"
+}
+
+variable "datadog_agent_sidecar_config" {
+  type        = any
+  default     = {}
+  description = "Datadog agent ECS task container configuration. It is used as a sidecar container in the fleet ECS task to collect observability data"
+}
+
+variable "datadog_api_aws_secret_manager_key" {
+  type        = string
+  default     = "INFRASTRUCTURE_DATADOG_API_KEY"
+  description = "AWS Secret Manager key to locate the Datadog API key"
+}

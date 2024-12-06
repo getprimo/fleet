@@ -47,6 +47,11 @@ resource "aws_ecs_service" "fleet" {
   }
 }
 
+data "aws_secretsmanager_secret" "datadog_api_key" {
+  count = var.enable_datadog_agent ? 1 : 0
+  name  = var.datadog_api_aws_secret_manager_key
+}
+
 resource "aws_ecs_task_definition" "backend" {
   family                   = var.fleet_config.family
   network_mode             = "awsvpc"
@@ -169,6 +174,24 @@ resource "aws_ecs_task_definition" "backend" {
         })
       ]
       : [],
+      var.enable_datadog_agent ?
+      [
+        merge(var.datadog_agent_sidecar_config, {
+          secrets = [
+            { name = "DD_API_KEY", valueFrom = data.aws_secretsmanager_secret.datadog_api_key[0].arn }
+          ]
+          logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+              awslogs-group         = var.fleet_config.awslogs.create ? aws_cloudwatch_log_group.main[0].name : var.fleet_config.awslogs.name
+              awslogs-region        = var.fleet_config.awslogs.create ? data.aws_region.current.name : var.fleet_config.awslogs.region
+              awslogs-stream-prefix = "${var.fleet_config.awslogs.prefix}-datadog-agent"
+            }
+          }
+        })
+      ]
+      : [],
+
     )
   )
   dynamic "volume" {
