@@ -16,9 +16,10 @@ locals {
   ], var.fleet_config.extra_load_balancers)
 
   default_datadog_environment = {
-    ECS_FARGATE = "true",
-    DD_SITE     = "datadoghq.eu",
-    DD_TAGS     = "companyid:${var.company_id}"
+    ECS_FARGATE                    = "true",
+    DD_SITE                        = "datadoghq.eu",
+    DD_TAGS                        = "company.id:${var.company_id},company.name:${var.company_domain}"
+    DD_ECS_TASK_COLLECTION_ENABLED = "true"
   }
 
   default_datadog_secrets = {
@@ -81,7 +82,7 @@ resource "aws_ecs_task_definition" "backend" {
   container_definitions = jsonencode(
     concat([
       {
-        name  = "fleet"
+        name  = "fleet-${var.company_domain}",
         image = var.fleet_config.image
         repositoryCredentials = {
           credentialsParameter = var.fleet_config.docker_token_arn
@@ -181,6 +182,7 @@ resource "aws_ecs_task_definition" "backend" {
       var.enable_redis_sidecar ?
       [
         merge(var.redis_sidecar_config, {
+          name = "${var.redis_sidecar_config.name}-${var.company_domain}"
           logConfiguration = {
             logDriver = "awslogs"
             options = {
@@ -195,6 +197,7 @@ resource "aws_ecs_task_definition" "backend" {
       var.enable_datadog_agent ?
       [
         merge(var.datadog_agent_sidecar_config, {
+          name        = "${var.datadog_agent_sidecar_config.name}-${var.company_domain}"
           secrets     = local.datadog_secrets
           environment = local.datadog_environment
           logConfiguration = {

@@ -16,6 +16,7 @@ module "ecs" {
   enable_datadog_agent         = var.enable_datadog_agent
   datadog_agent_sidecar_config = var.datadog_agent_sidecar_config
   company_id                   = var.company_id
+  company_domain               = var.company_domain
 }
 
 module "cluster" {

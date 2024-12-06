@@ -331,3 +331,9 @@ variable "company_id" {
   default     = null
   description = "Fleet Company ID"
 }
+
+variable "company_domain" {
+  type        = string
+  default     = null
+  description = "Fleet Company domain"
+}
