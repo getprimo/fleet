@@ -16,10 +16,10 @@ locals {
   ], var.fleet_config.extra_load_balancers)
 
   default_docker_labels = {
-    "com.getprimo.tenant.env"     = var.environment
-    "com.getprimo.tenant.service" = "fleet",
-    "com.getprimo.tenant.tenant"  = var.company_domain
-    "com.getprimo.tenant.version" = split(":", var.fleet_config.image)[1]
+    "com.getprimo.env"     = var.environment
+    "com.getprimo.service" = "fleet",
+    "com.getprimo.tenant"  = var.company_domain
+    "com.getprimo.version" = split(":", var.fleet_config.image)[1]
   }
 
   default_datadog_environment = {
