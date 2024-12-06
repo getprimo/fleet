@@ -188,7 +188,7 @@ variable "redis_sidecar_config" {
     cpu               = optional(number, 128)
     memory            = optional(number, 256)
     memoryReservation = optional(number, 128)
-    environment       = optional(list(any), [{}])
+    environment       = optional(list(any), [])
     portMappings = optional(list(any), [{
       containerPort = 6379
       protocol      = "tcp"
