@@ -15,6 +15,7 @@ module "ecs" {
   enable_redis_sidecar         = var.enable_redis_sidecar
   enable_datadog_agent         = var.enable_datadog_agent
   datadog_agent_sidecar_config = var.datadog_agent_sidecar_config
+  company_id                   = var.company_id
 }
 
 module "cluster" {

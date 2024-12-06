@@ -14,6 +14,24 @@ locals {
       container_port   = 8080
     }
   ], var.fleet_config.extra_load_balancers)
+
+  default_datadog_environment = {
+    ECS_FARGATE = "true",
+    DD_SITE     = "datadoghq.eu",
+    DD_TAGS     = "companyid:${var.company_id}"
+  }
+
+  default_datadog_secrets = {
+    DD_API_KEY = data.aws_secretsmanager_secret.datadog_api_key[0].arn
+  }
+  datadog_environment = [for k, v in merge(local.default_datadog_environment, var.datadog_agent_sidecar_config.environment) : {
+    name  = k
+    value = v
+  }]
+  datadog_secrets = [for k, v in merge(local.default_datadog_secrets, var.datadog_agent_sidecar_config.secrets) : {
+    name      = k
+    valueFrom = v
+  }]
 }
 
 data "aws_region" "current" {}
@@ -177,9 +195,8 @@ resource "aws_ecs_task_definition" "backend" {
       var.enable_datadog_agent ?
       [
         merge(var.datadog_agent_sidecar_config, {
-          secrets = [
-            { name = "DD_API_KEY", valueFrom = data.aws_secretsmanager_secret.datadog_api_key[0].arn }
-          ]
+          secrets     = local.datadog_secrets
+          environment = local.datadog_environment
           logConfiguration = {
             logDriver = "awslogs"
             options = {

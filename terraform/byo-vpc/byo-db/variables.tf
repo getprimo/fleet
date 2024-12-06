@@ -325,3 +325,9 @@ variable "datadog_api_aws_secret_manager_key" {
   default     = "INFRASTRUCTURE_DATADOG_API_KEY"
   description = "AWS Secret Manager key to locate the Datadog API key"
 }
+
+variable "company_id" {
+  type        = string
+  default     = null
+  description = "Fleet Company ID"
+}

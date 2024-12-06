@@ -224,10 +224,9 @@ variable "datadog_agent_sidecar_config" {
     cpu               = optional(number)
     memory            = optional(number)
     memoryReservation = optional(number)
-    environment = optional(list(any), [
-      { name = "ECS_FARGATE", value = "true" }
-    ])
-    portMappings = optional(list(any), [])
+    environment       = optional(map(string), {})
+    secrets           = optional(map(string), {})
+    portMappings      = optional(list(any), [])
   })
   default     = {}
   description = "Datadog agent ECS task container configuration. It is used as a sidecar container in the fleet ECS task to collect observability data"
@@ -237,4 +236,10 @@ variable "datadog_api_aws_secret_manager_key" {
   type        = string
   default     = "INFRASTRUCTURE_DATADOG_API_KEY"
   description = "AWS Secret Manager key to locate the Datadog API key"
+}
+
+variable "company_id" {
+  type        = string
+  default     = null
+  description = "Fleet Company ID"
 }
