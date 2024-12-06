@@ -221,16 +221,13 @@ variable "datadog_agent_sidecar_config" {
     name              = optional(string, "datadog-agent")
     image             = optional(string, "public.ecr.aws/datadog/agent:latest")
     essential         = optional(bool, true)
-    cpu               = optional(number, 128)
-    memory            = optional(number, 256)
-    memoryReservation = optional(number, 128)
+    cpu               = optional(number)
+    memory            = optional(number)
+    memoryReservation = optional(number)
     environment = optional(list(any), [
       { name = "ECS_FARGATE", value = "true" }
     ])
-    portMappings = optional(list(any), [{
-      containerPort = 6379
-      protocol      = "tcp"
-    }])
+    portMappings = optional(list(any), [])
   })
   default     = {}
   description = "Datadog agent ECS task container configuration. It is used as a sidecar container in the fleet ECS task to collect observability data"
