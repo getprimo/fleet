@@ -64,12 +64,14 @@ variable "fleet_config" {
       security_groups = optional(list(string), null)
     })
     autoscaling = optional(object({
-      max_capacity                 = optional(number, 5)
+      max_capacity                 = optional(number, 1)
       min_capacity                 = optional(number, 1)
       memory_tracking_target_value = optional(number, 80)
       cpu_tracking_target_value    = optional(number, 80)
       }), {
-      max_capacity                 = 5
+      # Set to 1 to avoid issue when having multiple replica with the Redis sidecar container.
+      # Moreover, autoscaling should not be set otherwise fleet scan will run on each replica.
+      max_capacity                 = 1
       min_capacity                 = 1
       memory_tracking_target_value = 80
       cpu_tracking_target_value    = 80
@@ -248,4 +250,10 @@ variable "company_domain" {
   type        = string
   default     = null
   description = "Fleet Company domain"
+}
+
+variable "environment" {
+  type        = string
+  default     = null
+  description = "Environment of the fleet deployment (production, staging, dev)"
 }

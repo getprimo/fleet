@@ -337,3 +337,9 @@ variable "company_domain" {
   default     = null
   description = "Fleet Company domain"
 }
+
+variable "environment" {
+  type        = string
+  default     = null
+  description = "Environment of the fleet deployment (production, staging, dev)"
+}

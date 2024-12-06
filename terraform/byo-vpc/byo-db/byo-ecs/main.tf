@@ -15,11 +15,19 @@ locals {
     }
   ], var.fleet_config.extra_load_balancers)
 
+  default_docker_labels = {
+    env     = var.environment
+    service = "fleet",
+    tenant  = var.company_domain
+    version = split(":", var.fleet_config.image)[1]
+  }
+
   default_datadog_environment = {
     ECS_FARGATE                    = "true",
     DD_SITE                        = "datadoghq.eu",
     DD_TAGS                        = "company.id:${var.company_id},company.name:${var.company_domain}"
     DD_ECS_TASK_COLLECTION_ENABLED = "true"
+    DD_CONTAINER_LABELS_AS_TAGS    = "\"com.getprimo.env\":\"env\"},{\"com.getprimo.service\":\"service\",\"com.getprimo.component\":\"component\"},\"com.getprimo.tenant\":\"tenant\"},\"com.getprimo.version\":\"version\"}"
   }
 
   default_datadog_secrets = {
@@ -63,6 +71,9 @@ resource "aws_ecs_service" "fleet" {
   network_configuration {
     subnets         = var.fleet_config.networking.subnets
     security_groups = var.fleet_config.networking.security_groups == null ? aws_security_group.main.*.id : var.fleet_config.networking.security_groups
+  }
+  tags = {
+    component = "app"
   }
 }
 
@@ -176,6 +187,9 @@ resource "aws_ecs_task_definition" "backend" {
             value = var.s3_bucket_config.software_path
           },
         ], local.environment)
+        dockerLabels = merge(local.default_docker_labels, {
+          component = "web-app"
+        })
       }
       ],
       var.fleet_config.sidecars,
@@ -191,6 +205,9 @@ resource "aws_ecs_task_definition" "backend" {
               awslogs-stream-prefix = "${var.fleet_config.awslogs.prefix}-redis"
             }
           }
+          dockerLabels = merge(local.default_docker_labels, {
+            component = "redis"
+          })
         })
       ]
       : [],
