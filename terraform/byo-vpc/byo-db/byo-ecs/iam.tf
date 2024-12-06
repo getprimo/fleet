@@ -40,8 +40,8 @@ data "aws_iam_policy_document" "fleet" {
 
     actions = [
       "ecs:ListClusters",
-      "ecs:ListContainerInstances	",
-      "ecs:DescribeContainerInstances	",
+      "ecs:ListContainerInstances",
+      "ecs:DescribeContainerInstances",
     ]
 
     resources = [
