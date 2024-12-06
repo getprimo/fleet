@@ -139,12 +139,12 @@ variable "fleet_config" {
       security_groups = null
     })
     autoscaling = optional(object({
-      max_capacity                 = optional(number, 5)
+      max_capacity                 = optional(number, 1)
       min_capacity                 = optional(number, 1)
       memory_tracking_target_value = optional(number, 80)
       cpu_tracking_target_value    = optional(number, 80)
       }), {
-      max_capacity                 = 5
+      max_capacity                 = 1
       min_capacity                 = 1
       memory_tracking_target_value = 80
       cpu_tracking_target_value    = 80
@@ -215,7 +215,7 @@ variable "fleet_config" {
       security_groups = null
     }
     autoscaling = {
-      max_capacity                 = 5
+      max_capacity                 = 1
       min_capacity                 = 1
       memory_tracking_target_value = 80
       cpu_tracking_target_value    = 80

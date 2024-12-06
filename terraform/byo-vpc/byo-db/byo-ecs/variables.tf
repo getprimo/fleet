@@ -142,7 +142,7 @@ variable "fleet_config" {
       security_groups = null
     }
     autoscaling = {
-      max_capacity                 = 5
+      max_capacity                 = 1
       min_capacity                 = 1
       memory_tracking_target_value = 80
       cpu_tracking_target_value    = 80
