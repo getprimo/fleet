@@ -34,6 +34,21 @@ data "aws_iam_policy_document" "fleet" {
     ]
   }
 
+  # Require by the datadog agent to collect ECS Fargate metrics
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "ecs:ListClusters",
+      "ecs:ListContainerInstances",
+      "ecs:DescribeContainerInstances",
+    ]
+
+    resources = [
+      "*"
+    ]
+  }
+
 }
 
 data "aws_iam_policy_document" "assume_role" {
@@ -50,9 +65,21 @@ data "aws_iam_policy_document" "assume_role" {
 data "aws_iam_policy_document" "fleet-execution" {
   # Allow fleet application to obtain the database password from secrets manager
   statement {
-    effect    = "Allow"
-    actions   = ["secretsmanager:GetSecretValue"]
-    resources = [var.fleet_config.database.password_secret_arn, var.fleet_config.docker_token_arn]
+    effect  = "Allow"
+    actions = ["secretsmanager:GetSecretValue"]
+    resources = [
+      var.fleet_config.database.password_secret_arn, var.fleet_config.docker_token_arn
+    ]
+  }
+  dynamic "statement" {
+    for_each = var.enable_datadog_agent ? [1] : []
+    content {
+      effect  = "Allow"
+      actions = ["secretsmanager:GetSecretValue"]
+      resources = [
+        data.aws_secretsmanager_secret.datadog_api_key[0].arn
+      ]
+    }
   }
 }
 

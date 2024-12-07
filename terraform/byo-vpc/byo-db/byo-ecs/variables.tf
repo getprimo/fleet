@@ -15,6 +15,7 @@ variable "fleet_config" {
     cpu                          = optional(number, 512)
     image                        = optional(string, "fleetdm/fleet:v4.44.0")
     docker_token_arn             = string
+    pid_mode                     = optional(string)
     family                       = optional(string, "fleet")
     sidecars                     = optional(list(any), [])
     depends_on                   = optional(list(any), [])
@@ -64,12 +65,14 @@ variable "fleet_config" {
       security_groups = optional(list(string), null)
     })
     autoscaling = optional(object({
-      max_capacity                 = optional(number, 5)
+      max_capacity                 = optional(number, 1)
       min_capacity                 = optional(number, 1)
       memory_tracking_target_value = optional(number, 80)
       cpu_tracking_target_value    = optional(number, 80)
       }), {
-      max_capacity                 = 5
+      # Set to 1 to avoid issue when having multiple replica with the Redis sidecar container.
+      # Moreover, autoscaling should not be set otherwise fleet scan will run on each replica.
+      max_capacity                 = 1
       min_capacity                 = 1
       memory_tracking_target_value = 80
       cpu_tracking_target_value    = 80
@@ -140,7 +143,7 @@ variable "fleet_config" {
       security_groups = null
     }
     autoscaling = {
-      max_capacity                 = 5
+      max_capacity                 = 1
       min_capacity                 = 1
       memory_tracking_target_value = 80
       cpu_tracking_target_value    = 80
@@ -179,4 +182,79 @@ variable "s3_bucket_config" {
     software_path = string
   })
   description = "S3 bucket configuration to manage fleet software packages"
+}
+variable "redis_sidecar_config" {
+  type = object({
+    name              = optional(string, "redis")
+    image             = optional(string, "redis:latest")
+    essential         = optional(bool, true)
+    cpu               = optional(number, 128)
+    memory            = optional(number, 256)
+    memoryReservation = optional(number, 128)
+    environment       = optional(list(any), [])
+    portMappings = optional(list(any), [{
+      containerPort = 6379
+      protocol      = "tcp"
+    }])
+  })
+  default     = {}
+  description = "Redis ECS task container configuration. It is used as a sidecar container in the fleet ECS task"
+}
+
+variable "enable_redis_sidecar" {
+  type        = bool
+  default     = true
+  description = "Use a Redis sidecar container within the fleet RDS task. This is done to lower cost of multiple ElastiCache instances."
+}
+
+variable "twingate_security_group" {
+  type        = string
+  default     = "tg-fleet-just-ara"
+  description = "Twinwgate connector security group allowed to connect to Redis in the ECS task"
+}
+
+variable "enable_datadog_agent" {
+  type        = bool
+  default     = true
+  description = "Enable datadog agent as container sidecar to collect fleet observability data"
+}
+
+variable "datadog_agent_sidecar_config" {
+  type = object({
+    name              = optional(string, "datadog-agent")
+    image             = optional(string, "public.ecr.aws/datadog/agent:latest")
+    essential         = optional(bool, true)
+    cpu               = optional(number)
+    memory            = optional(number)
+    memoryReservation = optional(number)
+    environment       = optional(map(string), {})
+    secrets           = optional(map(string), {})
+    portMappings      = optional(list(any), [])
+  })
+  default     = {}
+  description = "Datadog agent ECS task container configuration. It is used as a sidecar container in the fleet ECS task to collect observability data"
+}
+
+variable "datadog_api_aws_secret_manager_key" {
+  type        = string
+  default     = "INFRASTRUCTURE_DATADOG_API_KEY"
+  description = "AWS Secret Manager key to locate the Datadog API key"
+}
+
+variable "company_id" {
+  type        = string
+  default     = null
+  description = "Fleet Company ID"
+}
+
+variable "company_domain" {
+  type        = string
+  default     = null
+  description = "Fleet Company domain"
+}
+
+variable "environment" {
+  type        = string
+  default     = null
+  description = "Environment of the fleet deployment (production, staging, dev)"
 }

@@ -8,9 +8,16 @@ module "ecs" {
     extra_load_balancers = []
 
   })
-  migration_config = var.migration_config
-  vpc_id           = var.vpc_id
-  s3_bucket_config = var.s3_bucket_config
+  migration_config             = var.migration_config
+  vpc_id                       = var.vpc_id
+  s3_bucket_config             = var.s3_bucket_config
+  redis_sidecar_config         = var.redis_sidecar_config
+  enable_redis_sidecar         = var.enable_redis_sidecar
+  enable_datadog_agent         = var.enable_datadog_agent
+  datadog_agent_sidecar_config = var.datadog_agent_sidecar_config
+  company_id                   = var.company_id
+  company_domain               = var.company_domain
+  environment                  = var.environment
 }
 
 module "cluster" {

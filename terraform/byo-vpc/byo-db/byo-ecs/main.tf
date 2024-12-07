@@ -14,12 +14,39 @@ locals {
       container_port   = 8080
     }
   ], var.fleet_config.extra_load_balancers)
+
+  default_docker_labels = {
+    "com.getprimo.env"     = var.environment
+    "com.getprimo.service" = "fleet",
+    "com.getprimo.tenant"  = var.company_domain
+    "com.getprimo.version" = split(":", var.fleet_config.image)[1]
+  }
+
+  default_datadog_environment = {
+    ECS_FARGATE                    = "true",
+    DD_SITE                        = "datadoghq.eu",
+    DD_TAGS                        = "company.id:${var.company_id},company.name:${var.company_domain}"
+    DD_ECS_TASK_COLLECTION_ENABLED = "true"
+    DD_CONTAINER_LABELS_AS_TAGS    = "{\"com.getprimo.env\":\"env\",\"com.getprimo.service\":\"service\",\"com.getprimo.component\":\"component\",\"com.getprimo.tenant\":\"tenant\",\"com.getprimo.version\":\"version\"}"
+  }
+
+  default_datadog_secrets = {
+    DD_API_KEY = data.aws_secretsmanager_secret.datadog_api_key[0].arn
+  }
+  datadog_environment = [for k, v in merge(local.default_datadog_environment, var.datadog_agent_sidecar_config.environment) : {
+    name  = k
+    value = v
+  }]
+  datadog_secrets = [for k, v in merge(local.default_datadog_secrets, var.datadog_agent_sidecar_config.secrets) : {
+    name      = k
+    valueFrom = v
+  }]
 }
 
 data "aws_region" "current" {}
 
 resource "aws_ecs_service" "fleet" {
-  name                               = var.fleet_config.service.name
+  name                               = "${var.fleet_config.service.name}-${var.company_domain}"
   launch_type                        = "FARGATE"
   cluster                            = var.ecs_cluster
   task_definition                    = aws_ecs_task_definition.backend.arn
@@ -45,6 +72,14 @@ resource "aws_ecs_service" "fleet" {
     subnets         = var.fleet_config.networking.subnets
     security_groups = var.fleet_config.networking.security_groups == null ? aws_security_group.main.*.id : var.fleet_config.networking.security_groups
   }
+  tags = {
+    component = "web-app"
+  }
+}
+
+data "aws_secretsmanager_secret" "datadog_api_key" {
+  count = var.enable_datadog_agent ? 1 : 0
+  name  = var.datadog_api_aws_secret_manager_key
 }
 
 resource "aws_ecs_task_definition" "backend" {
@@ -55,15 +90,16 @@ resource "aws_ecs_task_definition" "backend" {
   execution_role_arn       = aws_iam_role.execution.arn
   cpu                      = var.fleet_config.cpu
   memory                   = var.fleet_config.mem
+  pid_mode                 = var.fleet_config.pid_mode
   container_definitions = jsonencode(
     concat([
       {
-        name  = "fleet"
+        name  = "fleet",
         image = var.fleet_config.image
         repositoryCredentials = {
           credentialsParameter = var.fleet_config.docker_token_arn
         }
-        cpu         = var.fleet_config.cpu
+        cpu         = var.enable_redis_sidecar ? var.fleet_config.cpu - var.redis_sidecar_config.cpu : var.fleet_config.cpu
         memory      = var.fleet_config.mem
         mountPoints = var.fleet_config.mount_points
         dependsOn   = var.fleet_config.depends_on
@@ -133,11 +169,11 @@ resource "aws_ecs_task_definition" "backend" {
           # },
           {
             name  = "FLEET_REDIS_ADDRESS"
-            value = var.fleet_config.redis.address
+            value = var.enable_redis_sidecar ? "localhost:6379" : var.fleet_config.redis.address
           },
           {
             name  = "FLEET_REDIS_USE_TLS"
-            value = tostring(var.fleet_config.redis.use_tls)
+            value = var.enable_redis_sidecar ? "false" : tostring(var.fleet_config.redis.use_tls)
           },
           {
             name  = "FLEET_SERVER_TLS"
@@ -152,8 +188,50 @@ resource "aws_ecs_task_definition" "backend" {
             value = var.s3_bucket_config.software_path
           },
         ], local.environment)
+        dockerLabels = merge(local.default_docker_labels, {
+          "com.getprimo.component" = "web-app"
+        })
       }
-  ], var.fleet_config.sidecars))
+      ],
+      var.fleet_config.sidecars,
+      var.enable_redis_sidecar ?
+      [
+        merge(var.redis_sidecar_config, {
+          name = "${var.redis_sidecar_config.name}-${var.company_domain}"
+          logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+              awslogs-group         = var.fleet_config.awslogs.create ? aws_cloudwatch_log_group.main[0].name : var.fleet_config.awslogs.name
+              awslogs-region        = var.fleet_config.awslogs.create ? data.aws_region.current.name : var.fleet_config.awslogs.region
+              awslogs-stream-prefix = "${var.fleet_config.awslogs.prefix}-redis"
+            }
+          }
+          dockerLabels = merge(local.default_docker_labels, {
+            "com.getprimo.component" = "redis"
+          })
+        })
+      ]
+      : [],
+      var.enable_datadog_agent ?
+      [
+        merge(var.datadog_agent_sidecar_config, {
+          name        = "${var.datadog_agent_sidecar_config.name}-${var.company_domain}"
+          secrets     = local.datadog_secrets
+          environment = local.datadog_environment
+          logConfiguration = {
+            logDriver = "awslogs"
+            options = {
+              awslogs-group         = var.fleet_config.awslogs.create ? aws_cloudwatch_log_group.main[0].name : var.fleet_config.awslogs.name
+              awslogs-region        = var.fleet_config.awslogs.create ? data.aws_region.current.name : var.fleet_config.awslogs.region
+              awslogs-stream-prefix = "${var.fleet_config.awslogs.prefix}-datadog-agent"
+            }
+          }
+        })
+      ]
+      : [],
+
+    )
+  )
   dynamic "volume" {
     for_each = var.fleet_config.volumes
     content {
@@ -247,4 +325,20 @@ resource "aws_security_group" "main" {
     protocol    = "TCP"
     cidr_blocks = ["10.0.0.0/8"]
   }
+
+  dynamic "ingress" {
+    for_each = var.enable_redis_sidecar ? [1] : []
+    content {
+      description     = "Allow Twingate connector to connect to redis"
+      from_port       = 6379
+      to_port         = 6379
+      protocol        = "TCP"
+      security_groups = [data.aws_security_group.twingate_connector[0].id]
+    }
+  }
+}
+
+data "aws_security_group" "twingate_connector" {
+  count = var.enable_redis_sidecar ? 1 : 0
+  name  = var.twingate_security_group
 }
