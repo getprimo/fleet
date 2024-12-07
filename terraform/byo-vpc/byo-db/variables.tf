@@ -77,6 +77,7 @@ variable "fleet_config" {
     image                        = optional(string, "fleetdm/fleet:v4.44.0")
     docker_token_arn             = string
     family                       = optional(string, "fleet")
+    pid_mode                     = optional(string)
     sidecars                     = optional(list(any), [])
     depends_on                   = optional(list(any), [])
     mount_points                 = optional(list(any), [])
