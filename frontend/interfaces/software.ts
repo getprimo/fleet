@@ -1,6 +1,10 @@
 import { startCase } from "lodash";
 import PropTypes from "prop-types";
 import vulnerabilityInterface from "./vulnerability";
+import {
+  SOFTWARE_SOURCE_DISPLAY_NAMES,
+  type SoftwareSource,
+} from "./software-sources";
 
 export default PropTypes.shape({
   type: PropTypes.string,
@@ -82,25 +86,19 @@ export interface ISoftwareVersion {
   hosts_count?: number;
 }
 
+/**
+ * @deprecated Use SOFTWARE_SOURCE_DISPLAY_NAMES from './software-sources' instead.
+ * This constant is kept for backward compatibility.
+ * @see ./software-sources.ts for the canonical list of software source types.
+ */
 export const SOURCE_TYPE_CONVERSION: Record<string, string> = {
-  apt_sources: "Package (APT)",
-  deb_packages: "Package (deb)",
-  portage_packages: "Package (Portage)",
-  rpm_packages: "Package (RPM)",
-  yum_sources: "Package (YUM)",
-  npm_packages: "Package (NPM)",
-  atom_packages: "Package (Atom)", // Atom packages were removed from software inventory. Mapping is maintained for backwards compatibility. (2023-12-04)
-  python_packages: "Package (Python)",
-  apps: "Application (macOS)",
+  ...SOFTWARE_SOURCE_DISPLAY_NAMES,
+  // Override chrome_extensions to include note about browser field
   chrome_extensions: "Browser plugin", // chrome_extensions can include any chrome-based browser (e.g., edge), so we rely instead on the `browser` field computed by Fleet server and fallback to this value if it is not present.
-  firefox_addons: "Browser plugin (Firefox)",
-  safari_extensions: "Browser plugin (Safari)",
-  homebrew_packages: "Package (Homebrew)",
-  programs: "Program (Windows)",
-  ie_extensions: "Browser plugin (IE)",
-  chocolatey_packages: "Package (Chocolatey)",
-  pkg_packages: "Package (pkg)",
 } as const;
+
+// Re-export for convenience
+export { ALL_SOFTWARE_SOURCES, type SoftwareSource } from "./software-sources";
 
 const BROWSER_TYPE_CONVERSION: Record<string, string> = {
   chrome: "Chrome",
